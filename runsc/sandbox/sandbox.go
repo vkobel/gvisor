@@ -58,7 +58,7 @@ func validateID(id string) error {
 //
 // Within a root directory, we maintain subdirectories for each sandbox named
 // with the sandbox id.  The sandbox metadata is is stored as json within the
-// sandbox directoy in a file named "meta.json".  This metadata format is
+// sandbox directory in a file named "meta.json".  This metadata format is
 // defined by us, and is not part of the OCI spec.
 //
 // Sandboxes must write this metadata file after any change to their internal
@@ -199,7 +199,7 @@ func Load(rootDir, id string) (*Sandbox, error) {
 	// If the status is "Running" or "Created", check that the process
 	// still exists, and set it to Stopped if it does not.
 	//
-	// This is inherintly racey.
+	// This is inherently racey.
 	if s.Status == Running || s.Status == Created {
 		// Send signal 0 to check if process exists.
 		if err := s.Signal(0); err != nil {
@@ -560,19 +560,20 @@ func (s *Sandbox) createSandboxProcess(conf *boot.Config, binPath string, common
 // running, at which point the sandbox is in Created state.
 func (s *Sandbox) waitForCreated(timeout time.Duration) error {
 	log.Debugf("Waiting for sandbox %q creation", s.ID)
-	tchan := time.After(timeout)
-	for {
-		select {
-		case <-tchan:
-			return fmt.Errorf("timed out waiting for sandbox control server")
-		default:
-			if c, err := client.ConnectTo(boot.ControlSocketAddr(s.ID)); err == nil {
-				// It's alive!
-				c.Close()
-				return nil
-			}
+
+	ready := func() (bool, error) {
+		c, err := client.ConnectTo(boot.ControlSocketAddr(s.ID))
+		if err != nil {
+			return false, nil
 		}
+		// It's alive!
+		c.Close()
+		return true, nil
 	}
+	if err := specutils.WaitForReady(s.Pid, timeout, ready); err != nil {
+		return fmt.Errorf("unexpected error waiting for sandbox %q, err: %v", s.ID, err)
+	}
+	return nil
 }
 
 // Wait waits for the containerized process to exit, and returns its WaitStatus.

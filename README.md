@@ -166,11 +166,14 @@ and Docker.
 
 ### Requirements
 
+gVisor currently can only build and run on Linux. In addition, the following
+dependencies must be installed.
+
 * [git][git]
 * [Bazel][bazel]
-* [Python 2.7][python] (See [bug #8](https://github.com/google/gvisor/issues/8)
-  for Python 3 support updates)
+* [Python][python]
 * [Docker version 17.09.0 or greater][docker]
+* Gold linker (e.g. `binutils-gold` package on Ubuntu)
 
 ### Getting the source
 
@@ -185,8 +188,8 @@ cd gvisor
 
 Build and install the `runsc` binary.
 
-It is important to copy this binary to some place that is accessible to all
-users, since `runsc` executes itself as user `nobody` to avoid unnecessary
+**It is important to copy this binary to some place that is accessible to all
+users**, since `runsc` executes itself as user `nobody` to avoid unnecessary
 privileges. The `/usr/local/bin` directory is a good choice.
 
 ```
@@ -265,8 +268,8 @@ Docker configuration (`/etc/docker/daemon.json`):
 {
     "runtimes": {
         "runsc": {
-            "path": "/usr/local/bin/runsc"
-             "runtimeArgs": [
+            "path": "/usr/local/bin/runsc",
+            "runtimeArgs": [
                 "--debug-log-dir=/tmp/runsc",
                 "--debug",
                 "--strace"
@@ -300,8 +303,8 @@ Add the following `runtimeArgs` to your Docker configuration
 {
     "runtimes": {
         "runsc": {
-            "path": "/usr/local/bin/runsc"
-             "runtimeArgs": [
+            "path": "/usr/local/bin/runsc",
+            "runtimeArgs": [
                 "--network=host"
             ]
        }
@@ -320,8 +323,8 @@ configuration (`/etc/docker/daemon.json`):
 {
     "runtimes": {
         "runsc": {
-            "path": "/usr/local/bin/runsc"
-             "runtimeArgs": [
+            "path": "/usr/local/bin/runsc",
+            "runtimeArgs": [
                 "--platform=kvm"
             ]
        }
@@ -373,6 +376,11 @@ features and bugs. The only real way to know if it will work is to try. If you
 find a container that doesn’t work and there is no known issue, please [file a
 bug][bug] indicating the full command you used to run the image. Providing the
 debug logs is also helpful.
+
+### When I run my container, docker fails with `flag provided but not defined: -console`
+
+You're using an old version of Docker. Refer to the
+[Requirements](#requirements) section for the minimum version supported.
 
 ### My container runs fine with *runc* but fails with *runsc*.
 
