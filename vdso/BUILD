@@ -29,7 +29,7 @@ genrule(
           "-fuse-ld=gold " +
           "-m64 " +
           "-shared " +
-          "-fstack-protector " +
+          "-fno-stack-protector " +
           "-nostdlib " +
           "-Wl,-soname=linux-vdso.so.1 " +
           "-Wl,--hash-style=sysv " +
